@@ -50,6 +50,10 @@ public class CallNode {
         return startTime;
     }
 
+    public long getStopTime() {
+        return stopTime;
+    }
+
     public CallNode withSubCallNode(CallNode callNode) {
         List<CallNode> newSubCallNodes = new ArrayList<CallNode>(subCallNodes);
         newSubCallNodes.add(callNode);
@@ -74,15 +78,15 @@ public class CallNode {
         return "name=" + name + ", properties=" + properties + ", subCallNodes=" + subCallNodes;
     }
 
-    public long getAggregatedTimeMS() {
-        return stopTime - startTime;
-    }
-
     public CallNode withStopTime(long time) {
         return new CallNode(name, properties, subCallNodes, startTime, time);
     }
 
-    public long getOwnTimeMS() {
+    long getAggregatedTimeMS() {
+        return stopTime - startTime;
+    }
+
+    long getOwnTimeMS() {
         long subCallTime = 0;
         for (CallNode callNode : subCallNodes) {
             subCallTime += callNode.getAggregatedTimeMS();
