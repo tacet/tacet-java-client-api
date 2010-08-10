@@ -6,6 +6,7 @@ import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
 import com.sun.jersey.client.apache.ApacheHttpClient;
 import com.sun.jersey.client.apache.config.ApacheHttpClientConfig;
+import org.apache.log4j.Logger;
 import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
 import org.springframework.beans.factory.DisposableBean;
 
@@ -17,7 +18,9 @@ import java.util.concurrent.Executors;
  * @author <a href="mailto:thor.aage.eldby@arktekk.no">Thor Åge Eldby (teldby)</a>
  */
 public class MeasurementSender implements DisposableBean {
-    
+
+    private final static Logger logger = Logger.getLogger(MeasurementSender.class);
+
     private final ApacheHttpClient httpClient;
     private final String uri;
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
@@ -42,7 +45,11 @@ public class MeasurementSender implements DisposableBean {
         executorService.submit(new Runnable() {
             @Override
             public void run() {
-                createResource(uri).put(String.class, callGraph);
+                try {
+                    createResource(uri).put(String.class, callGraph);
+                } catch (Exception e) {
+                    logger.error("Failed to push call graph");
+                }
             }
         });
     }

@@ -68,6 +68,11 @@ public class MeasurementSenderTest {
                 "{\"name\":\"hei\",\"properties\":{\"user\":\"name\"},\"subCallNodes\":[{\"name\":\"yeah\",\"properties\":{},\"subCallNodes\":[],\"startTime\":90020,\"stopTime\":90040}],\"startTime\":90000,\"stopTime\":90060}");
     }
 
+    @Test
+    public void error_in_sending_does_not_bubble_up() {
+        new MeasurementSender("http://localhost:0/").send(CallNode.newInstance("yeah", 90020).withStopTime(90040));
+    }
+
     private void assertResults(String... expectedResults) {
         List<String> results = new ArrayList<String>(Arrays.asList(expectedResults));
         while (!results.isEmpty()) {
