@@ -14,13 +14,13 @@ public class CallGraphRecorderTest {
     @Test
     public void call_graph_is_recorded() {
         CallGraphRecorder.start("a", ImmutableMap.of("Hei", "Hopp"));
-        CallGraphRecorder.start("b");
+        CallGraphRecorder.start("b");//TODO:.withTag("stupid");
         CallGraphRecorder.stop("b");
         CallGraphRecorder.start("c");
         CallGraphRecorder.stop("c");
         CallGraphRecorder.stop("a");
         CallMeasurement lastCallGraph = CallGraphRecorder.getAndResetLastCallGraph();
-        CallMeasurement expectedCallGraph = CallMeasurement.newInstance("a", 0).withProperty("Hei", "Hopp").withChild(CallMeasurement.newInstance("b", 0)).withChild(CallMeasurement.newInstance("c", 0));
+        CallMeasurement expectedCallGraph = CallMeasurement.newInstance("a", 0).withProperty("Hei", "Hopp").withChild(CallMeasurement.newInstance("b", 0)/*.withTag("Stupid")*/).withChild(CallMeasurement.newInstance("c", 0));
         assertCallGraphEquals(expectedCallGraph, lastCallGraph);
     }
 

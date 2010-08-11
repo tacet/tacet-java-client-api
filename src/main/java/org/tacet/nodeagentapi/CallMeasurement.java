@@ -61,7 +61,7 @@ public class CallMeasurement extends Measurement {
 
     public boolean isEqualExceptTimings(CallMeasurement other) {
         int nodeCount = children.size();
-        if (other.getName().equals(name) && other.getProperties().equals(properties) && other.getChildren().size() == nodeCount) {
+        if (other.getName().equals(name) && other.getProperties().equals(properties) && other.getChildren().size() == nodeCount && other.getTags().equals(tags)) {
             for (int i = 0; i < nodeCount; ++i) {
                 if (!children.get(i).isEqualExceptTimings(other.getChildren().get(i))) {
                     return false;
@@ -82,13 +82,19 @@ public class CallMeasurement extends Measurement {
     }
 
     public CallMeasurement withProperties(Map<String, String> properties) {
-        return new CallMeasurement(name, properties, children, startNS, stopNS, tags); 
+        return new CallMeasurement(name, properties, children, startNS, stopNS, tags);
     }
 
     public CallMeasurement withProperty(String name, String value) {
         HashMap<String, String> newProperties = new HashMap<String, String>(properties);
         newProperties.put(name, value);
         return new CallMeasurement(this.name, newProperties, children, startNS, stopNS, tags);
+    }
+
+    public CallMeasurement withTag(String tag) {
+        ArrayList<String> newTags = new ArrayList<String>(tags);
+        newTags.add(tag);
+        return new CallMeasurement(name, properties, children, startNS, stopNS, newTags);
     }
     
 }
