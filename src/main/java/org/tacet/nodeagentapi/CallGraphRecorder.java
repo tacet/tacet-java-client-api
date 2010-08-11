@@ -1,5 +1,7 @@
 package org.tacet.nodeagentapi;
 
+import org.tacet.nodeagentapi.model.CallMeasurement;
+
 import java.util.Collections;
 import java.util.Map;
 import java.util.Stack;
