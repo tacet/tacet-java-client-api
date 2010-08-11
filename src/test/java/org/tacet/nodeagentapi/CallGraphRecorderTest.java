@@ -19,12 +19,12 @@ public class CallGraphRecorderTest {
         CallGraphRecorder.start("c");
         CallGraphRecorder.stop("c");
         CallGraphRecorder.stop("a");
-        CallNode lastCallGraph = CallGraphRecorder.getAndResetLastCallGraph();
-        CallNode expectedCallGraph = CallNode.newInstance("a", 0, ImmutableMap.of("Hei", "Hopp")).withSubCallNode(CallNode.newInstance("b", 0)).withSubCallNode(CallNode.newInstance("c", 0));
+        CallMeasurement lastCallGraph = CallGraphRecorder.getAndResetLastCallGraph();
+        CallMeasurement expectedCallGraph = CallMeasurement.newInstance("a", 0).withProperty("Hei", "Hopp").withChild(CallMeasurement.newInstance("b", 0)).withChild(CallMeasurement.newInstance("c", 0));
         assertCallGraphEquals(expectedCallGraph, lastCallGraph);
     }
 
-    private void assertCallGraphEquals(CallNode expectedCallGraph, CallNode callGraph) {
+    private void assertCallGraphEquals(CallMeasurement expectedCallGraph, CallMeasurement callGraph) {
         assertTrue("Expected: " + expectedCallGraph + "; got: " + callGraph, expectedCallGraph.isEqualExceptTimings(callGraph));
     }
 
@@ -35,26 +35,24 @@ public class CallGraphRecorderTest {
             public void run() {
                 CallGraphRecorder.start("b");
                 CallGraphRecorder.stop("b");
-                CallNode expectedCallGraph = CallNode.newInstance("b", 0);
-                CallNode lastCallGraph = CallGraphRecorder.getAndResetLastCallGraph();
+                CallMeasurement expectedCallGraph = CallMeasurement.newInstance("b", 0);
+                CallMeasurement lastCallGraph = CallGraphRecorder.getAndResetLastCallGraph();
                 assertCallGraphEquals(expectedCallGraph, lastCallGraph);
             }
         });
         thread.start();
         thread.join(100000);
         CallGraphRecorder.stop("a");
-        CallNode expectedCallGraph = CallNode.newInstance("a", 0);
-        CallNode lastCallGraph = CallGraphRecorder.getAndResetLastCallGraph();
+        CallMeasurement expectedCallGraph = CallMeasurement.newInstance("a", 0);
+        CallMeasurement lastCallGraph = CallGraphRecorder.getAndResetLastCallGraph();
         assertCallGraphEquals(expectedCallGraph, lastCallGraph);
     }
 
     @Test
     public void call_timings_is_available_recursively() throws Exception {
-        CallNode callNode = CallNode.newInstance("a", 90000).withStopTime(90060).withSubCallNode(CallNode.newInstance("b", 90020).withStopTime(90040));
-        assertEquals(60, callNode.getAggregatedTimeMS());
-        assertEquals(40, callNode.getOwnTimeMS());
-        assertEquals(20, callNode.getSubCallNodes().get(0).getAggregatedTimeMS());
-        assertEquals(20, callNode.getSubCallNodes().get(0).getOwnTimeMS());
+        CallMeasurement callMeasurement = CallMeasurement.newInstance("a", 90000).withStopNS(90060).withChild(CallMeasurement.newInstance("b", 90020).withStopNS(90040));
+        assertEquals(60, callMeasurement.getValue().longValue());
+        assertEquals(20, callMeasurement.getChildren().get(0).getValue().longValue());
     }
 
 }

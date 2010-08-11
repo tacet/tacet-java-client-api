@@ -11,11 +11,11 @@ public class CallGraphRecorder {
 
     //private static Logger logger = Logger.getLogger(CallGraphRecorder.class);
 
-    private static ThreadLocal<Stack<CallNode>> threadCallStack = new ThreadLocal<Stack<CallNode>>();
-    private static ThreadLocal<CallNode> threadLastCallGraph = new ThreadLocal<CallNode>();
+    private static ThreadLocal<Stack<CallMeasurement>> threadCallStack = new ThreadLocal<Stack<CallMeasurement>>();
+    private static ThreadLocal<CallMeasurement> threadLastCallGraph = new ThreadLocal<CallMeasurement>();
 
     public static void start(String name, Map<String, String> properties) {
-        getCallStack().push(CallNode.newInstance(name, System.currentTimeMillis(), properties));
+        getCallStack().push(CallMeasurement.newInstance(name, System.currentTimeMillis()).withProperties(properties));
     }
 
     @SuppressWarnings({"unchecked"})
@@ -24,28 +24,28 @@ public class CallGraphRecorder {
     }
 
     public static void stop(String name) {
-        Stack<CallNode> callStack = getCallStack();
-        CallNode callNode = callStack.pop().withStopTime(System.currentTimeMillis());
-        /*if (!callNode.getName().equals(name)) {
-            logger.warn("Expected stop of '" + callNode.getName() + "', but found '" + name);
+        Stack<CallMeasurement> callStack = getCallStack();
+        CallMeasurement callMeasurement = callStack.pop().withStopNS(System.currentTimeMillis());
+        /*if (!callMeasurement.getName().equals(name)) {
+            logger.warn("Expected stop of '" + callMeasurement.getName() + "', but found '" + name);
         }*/
         if (callStack.isEmpty()) {
-            threadLastCallGraph.set(callNode);
+            threadLastCallGraph.set(callMeasurement);
         } else {
-            callStack.push(callStack.pop().withSubCallNode(callNode));
+            callStack.push(callStack.pop().withChild(callMeasurement));
         }
     }
 
-    public static CallNode getAndResetLastCallGraph() {
-        CallNode callGraph = threadLastCallGraph.get();
+    public static CallMeasurement getAndResetLastCallGraph() {
+        CallMeasurement callGraph = threadLastCallGraph.get();
         threadLastCallGraph.set(null);
         return callGraph;
     }
 
-    private static Stack<CallNode> getCallStack() {
-        Stack<CallNode> value = threadCallStack.get();
+    private static Stack<CallMeasurement> getCallStack() {
+        Stack<CallMeasurement> value = threadCallStack.get();
         if (value == null) {
-            value = new Stack<CallNode>();
+            value = new Stack<CallMeasurement>();
             threadCallStack.set(value);
         }
         return value;

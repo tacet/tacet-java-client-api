@@ -41,7 +41,7 @@ public class MeasurementSender implements DisposableBean {
         }
     }
 
-    public void send(final CallNode callGraph) {
+    public void send(final CallMeasurement callGraph) {
         executorService.submit(new Runnable() {
             @Override
             public void run() {

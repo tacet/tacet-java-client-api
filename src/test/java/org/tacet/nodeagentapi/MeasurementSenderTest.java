@@ -59,18 +59,18 @@ public class MeasurementSenderTest {
     }
 
     @Test
-    public void can_send_result_asynchronous_as_json() {
-        CallNode subCallNode = CallNode.newInstance("yeah", 90020).withStopTime(90040);
-        CallNode callNode = CallNode.newInstance("hei", 90000, ImmutableMap.of("user", "name")).withStopTime(90060);
-        new MeasurementSender("http://localhost:" + getPort() + "/measurements").send(callNode);
-        new MeasurementSender("http://localhost:" + getPort() + "/measurements").send(callNode.withSubCallNode(subCallNode));
-        assertResults("{\"name\":\"hei\",\"properties\":{\"user\":\"name\"},\"subCallNodes\":[],\"startTime\":90000,\"stopTime\":90060}",
-                "{\"name\":\"hei\",\"properties\":{\"user\":\"name\"},\"subCallNodes\":[{\"name\":\"yeah\",\"properties\":{},\"subCallNodes\":[],\"startTime\":90020,\"stopTime\":90040}],\"startTime\":90000,\"stopTime\":90060}");
+    public void can_send_result_asynchronous_as_json() throws Exception {
+        CallMeasurement subCallMeasurement = CallMeasurement.newInstance("yeah", 90020).withStopNS(90040);
+        CallMeasurement callMeasurement = CallMeasurement.newInstance("hei", 90000).withProperties(ImmutableMap.of("user", "name")).withStopNS(90060);
+        new MeasurementSender("http://localhost:" + getPort() + "/measurements").send(callMeasurement);
+        new MeasurementSender("http://localhost:" + getPort() + "/measurements").send(callMeasurement.withChild(subCallMeasurement));
+        assertResults(IOUtils.toString(getClass().getResourceAsStream("can_send_result_asynchronous_as_json_example1.json")),
+                IOUtils.toString(getClass().getResourceAsStream("can_send_result_asynchronous_as_json_example2.json")));
     }
 
     @Test
     public void error_in_sending_does_not_bubble_up() {
-        new MeasurementSender("http://localhost:0/").send(CallNode.newInstance("yeah", 90020).withStopTime(90040));
+        new MeasurementSender("http://localhost:0/").send(CallMeasurement.newInstance("yeah", 90020).withStopNS(90040));
     }
 
     private void assertResults(String... expectedResults) {
@@ -79,7 +79,7 @@ public class MeasurementSenderTest {
             synchronized (resultLock) {
                 if (result != null) {
                     if (!results.remove(result)) {
-                        fail();
+                        fail("Result not found in expected: " + result);
                     }
                     result = null;
                 }

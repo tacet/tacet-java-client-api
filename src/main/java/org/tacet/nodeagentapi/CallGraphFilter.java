@@ -8,6 +8,7 @@ import java.io.IOException;
  * 
  * @author <a href="mailto:thor.aage.eldby@arktekk.no">Thor Åge Eldby (teldby)</a>
  */
+@SuppressWarnings({"UnusedDeclaration"})
 public class CallGraphFilter implements Filter {
 
     private final MeasurementSender measurementSender;
