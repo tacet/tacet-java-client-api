@@ -9,7 +9,7 @@ import com.sun.jersey.client.apache.config.ApacheHttpClientConfig;
 import org.apache.log4j.Logger;
 import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
 import org.springframework.beans.factory.DisposableBean;
-import org.tacet.nodeagentapi.model.CallMeasurement;
+import org.tacet.nodeagentapi.model.Root;
 
 import javax.ws.rs.core.MediaType;
 import java.util.concurrent.ExecutorService;
@@ -42,14 +42,14 @@ public class MeasurementSender implements DisposableBean {
         }
     }
 
-    public void send(final CallMeasurement callGraph) {
+    public void send(final Root root) {
         executorService.submit(new Runnable() {
             @Override
             public void run() {
                 try {
-                    createResource(uri).put(String.class, callGraph);
+                    createResource(uri).put(String.class, root);
                 } catch (Exception e) {
-                    logger.error("Failed to push call graph");
+                    logger.error("Failed to push call graph", e);
                 }
             }
         });

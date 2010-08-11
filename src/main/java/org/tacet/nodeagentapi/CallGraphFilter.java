@@ -1,5 +1,8 @@
 package org.tacet.nodeagentapi;
 
+import org.tacet.nodeagentapi.model.Root;
+import org.tacet.nodeagentapi.util.NetworkHelper;
+
 import javax.servlet.*;
 import java.io.IOException;
 
@@ -29,10 +32,9 @@ public class CallGraphFilter implements Filter {
             chain.doFilter(request, response);
         } finally {
             CallGraphRecorder.stop(scheme);
-            measurementSender.send(CallGraphRecorder.getAndResetLastCallGraph());
+            measurementSender.send(Root.newInstance(NetworkHelper.getHostName()).withMeasurement(CallGraphRecorder.getAndResetLastCallGraph()));
         }
     }
-
     @Override
     public void destroy() {
     }
