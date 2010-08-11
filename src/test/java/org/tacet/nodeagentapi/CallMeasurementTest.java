@@ -1,9 +1,9 @@
-package org.tacet.nodeagentapi.model;
+package org.tacet.nodeagentapi;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.junit.Test;
-import org.tacet.nodeagentapi.model.CallMeasurement;
+import org.tacet.nodeagentapi.CallMeasurement;
 
 import static org.junit.Assert.assertEquals;
 

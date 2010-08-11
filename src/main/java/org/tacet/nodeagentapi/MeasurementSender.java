@@ -9,7 +9,6 @@ import com.sun.jersey.client.apache.config.ApacheHttpClientConfig;
 import org.apache.log4j.Logger;
 import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
 import org.springframework.beans.factory.DisposableBean;
-import org.tacet.nodeagentapi.model.Root;
 
 import javax.ws.rs.core.MediaType;
 import java.util.concurrent.ExecutorService;

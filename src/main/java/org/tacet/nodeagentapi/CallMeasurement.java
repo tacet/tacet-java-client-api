@@ -1,4 +1,4 @@
-package org.tacet.nodeagentapi.model;
+package org.tacet.nodeagentapi;
 
 import java.util.*;
 

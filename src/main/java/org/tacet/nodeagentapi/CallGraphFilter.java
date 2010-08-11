@@ -1,6 +1,5 @@
 package org.tacet.nodeagentapi;
 
-import org.tacet.nodeagentapi.model.Root;
 import org.tacet.nodeagentapi.util.NetworkHelper;
 
 import javax.servlet.*;

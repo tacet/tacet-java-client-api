@@ -1,4 +1,4 @@
-package org.tacet.nodeagentapi.model;
+package org.tacet.nodeagentapi;
 
 /**
  * @author <a href="mailto:thor.aage.eldby@arktekk.no">Thor Åge Eldby (teldby)</a>

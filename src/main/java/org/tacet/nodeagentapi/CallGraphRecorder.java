@@ -1,7 +1,5 @@
 package org.tacet.nodeagentapi;
 
-import org.tacet.nodeagentapi.model.CallMeasurement;
-
 import java.util.Collections;
 import java.util.Map;
 import java.util.Stack;
@@ -17,7 +15,7 @@ public class CallGraphRecorder {
     private static ThreadLocal<CallMeasurement> threadLastCallGraph = new ThreadLocal<CallMeasurement>();
 
     public static void start(String name, Map<String, String> properties) {
-        getCallStack().push(CallMeasurement.newInstance(name, System.currentTimeMillis()).withProperties(properties));
+        getCallStack().push(CallMeasurement.newInstance(name, System.nanoTime()).withProperties(properties));
     }
 
     @SuppressWarnings({"unchecked"})
@@ -27,7 +25,7 @@ public class CallGraphRecorder {
 
     public static void stop(String name) {
         Stack<CallMeasurement> callStack = getCallStack();
-        CallMeasurement callMeasurement = callStack.pop().withStopNS(System.currentTimeMillis());
+        CallMeasurement callMeasurement = callStack.pop().withStopNS(System.nanoTime());
         /*if (!callMeasurement.getName().equals(name)) {
             logger.warn("Expected stop of '" + callMeasurement.getName() + "', but found '" + name);
         }*/

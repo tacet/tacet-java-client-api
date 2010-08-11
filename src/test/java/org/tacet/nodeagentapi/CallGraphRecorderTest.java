@@ -2,7 +2,6 @@ package org.tacet.nodeagentapi;
 
 import com.google.common.collect.ImmutableMap;
 import org.junit.Test;
-import org.tacet.nodeagentapi.model.CallMeasurement;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
