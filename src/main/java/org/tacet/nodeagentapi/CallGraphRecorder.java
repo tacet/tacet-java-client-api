@@ -36,7 +36,7 @@ public class CallGraphRecorder {
         }
     }
 
-    public static void commit(CallMeasurement measurement) {
+    static void commit(CallMeasurement measurement) {
         try {
             ThreadInfo threadInfo = getThreadInfo();
             if (threadInfo.idStack.isEmpty()) {
