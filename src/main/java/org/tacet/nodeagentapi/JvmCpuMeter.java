@@ -8,7 +8,7 @@ import sun.management.ManagementFactory;
  * @author <a href="mailto:thor.aage.eldby@arktekk.no">Thor Åge Eldby (teldby)</a>
  */
 @SuppressWarnings({"UnusedDeclaration"})
-public class JvmCpuMeter implements Meter {
+public class JvmCpuMeter implements Meter<Double> {
 
     private final OperatingSystemMXBean mxBean;
     private boolean initial = true;
