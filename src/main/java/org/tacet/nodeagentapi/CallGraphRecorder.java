@@ -1,7 +1,11 @@
 package org.tacet.nodeagentapi;
 
+import org.apache.log4j.Logger;
+import org.tacet.nodeagentapi.util.Pair;
+
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Map;
+import java.util.List;
 import java.util.Stack;
 
 /**
@@ -9,46 +13,71 @@ import java.util.Stack;
  */
 public class CallGraphRecorder {
 
-    //private static Logger logger = Logger.getLogger(CallGraphRecorder.class);
+    private static Logger logger = Logger.getLogger(CallGraphRecorder.class);
 
-    private static ThreadLocal<Stack<CallMeasurement>> threadCallStack = new ThreadLocal<Stack<CallMeasurement>>();
-    private static ThreadLocal<CallMeasurement> threadLastCallGraph = new ThreadLocal<CallMeasurement>();
+    private static ThreadLocal<ThreadInfo> threadLocalThreadInfo = new ThreadLocal<ThreadInfo>();
 
-    public static void start(String name, Map<String, String> properties) {
-        getCallStack().push(CallMeasurement.newInstance(name, System.nanoTime()).withProperties(properties));
+    private static class ThreadInfo {
+        public Stack<Pair<Integer, String>> idStack = new Stack<Pair<Integer, String>>();
+        public Stack<CallMeasurement> children = new Stack<CallMeasurement>(); 
+
+        public Pair<Integer, String> pushNewId(String name) {
+            return idStack.push(Pair.from(idStack.isEmpty() ? 1 : idStack.peek().first + 1, name));
+        }
     }
 
-    @SuppressWarnings({"unchecked"})
-    public static void start(String name) {
-        start(name, Collections.EMPTY_MAP);
+    public static CallMeasurement start(String name) {
+        return CallMeasurement.newInstance(getThreadInfo().pushNewId(name).first, name, System.nanoTime());
     }
 
-    public static void stop(String name) {
-        Stack<CallMeasurement> callStack = getCallStack();
-        CallMeasurement callMeasurement = callStack.pop().withStopNS(System.nanoTime());
-        /*if (!callMeasurement.getName().equals(name)) {
-            logger.warn("Expected stop of '" + callMeasurement.getName() + "', but found '" + name);
-        }*/
-        if (callStack.isEmpty()) {
-            threadLastCallGraph.set(callMeasurement);
+    public static void commit(CallMeasurement measurement) {
+        ThreadInfo threadInfo = getThreadInfo();
+        if (threadInfo.idStack.isEmpty()) {
+            logger.fatal("Received commit after empty id stack.");
         } else {
-            callStack.push(callStack.pop().withChild(callMeasurement));
+            int idStackHead = threadInfo.idStack.peek().first;
+            int id = measurement.getId();
+            if (idStackHead == id) {
+                threadInfo.idStack.pop();
+                List<CallMeasurement> children = new ArrayList<CallMeasurement>();
+                while (!threadInfo.children.isEmpty() && threadInfo.children.peek().getId() > id) {
+                    children.add(threadInfo.children.pop());
+                }
+                Collections.reverse(children);
+                threadInfo.children.push(measurement.withChildren(children));
+            } else if (idStackHead > id) {
+                Pair<Integer, String> pair = threadInfo.idStack.pop();
+                logger.error("The call measurement '" + pair.second + "' is dropped since it has not been stopped correctly.");
+                commit(measurement);
+            } else {
+                logger.error("The call measurement '" + measurement.getName() + "' id dropped since it does not conform to tree topology (start/stop out of order or multiple times).");
+            }
         }
     }
 
     public static CallMeasurement getAndResetLastCallGraph() {
-        CallMeasurement callGraph = threadLastCallGraph.get();
-        threadLastCallGraph.set(null);
-        return callGraph;
-    }
-
-    private static Stack<CallMeasurement> getCallStack() {
-        Stack<CallMeasurement> value = threadCallStack.get();
-        if (value == null) {
-            value = new Stack<CallMeasurement>();
-            threadCallStack.set(value);
+        Stack<CallMeasurement> measurements = getThreadInfo().children;
+        CallMeasurement measurement;
+        if (measurements.isEmpty()) {
+            logger.warn("No call measurements found.");
+            measurement = null;
+        } else {
+            measurement = measurements.pop();
+            if (!measurements.isEmpty()) {
+                logger.error("Found multiple measurements. Dropped '" + measurement.getName() + "'");
+                return getAndResetLastCallGraph();
+            }
         }
-        return value;
+        threadLocalThreadInfo.set(null);
+        return measurement;
     }
 
+    private static ThreadInfo getThreadInfo() {
+        ThreadInfo threadInfo = threadLocalThreadInfo.get();
+        if (threadInfo == null) {
+            threadInfo = new ThreadInfo();
+            threadLocalThreadInfo.set(threadInfo);
+        }
+        return threadInfo;
+    }
 }

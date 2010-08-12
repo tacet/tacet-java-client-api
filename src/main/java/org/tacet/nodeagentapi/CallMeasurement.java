@@ -7,6 +7,7 @@ import java.util.*;
  */
 public class CallMeasurement extends Measurement {
 
+    private final int id;
     private final String name;
     private final Map<String, String> properties;
     private final List<CallMeasurement> children;
@@ -14,7 +15,8 @@ public class CallMeasurement extends Measurement {
     private final long startNS;
     private final long stopNS;
 
-    public CallMeasurement(String name, Map<String, String> properties, List<CallMeasurement> children, long startNS, long stopNS, List<String> tags) {
+    private CallMeasurement(int id, String name, Map<String, String> properties, List<CallMeasurement> children, long startNS, long stopNS, List<String> tags) {
+        this.id = id;
         this.name = name;
         this.properties = properties;
         this.children = children;
@@ -24,8 +26,12 @@ public class CallMeasurement extends Measurement {
     }
 
     @SuppressWarnings({"unchecked"})
-    public static CallMeasurement newInstance(String name, long startNS) {
-        return new CallMeasurement(name, Collections.EMPTY_MAP, Collections.EMPTY_LIST, startNS, -1, Collections.EMPTY_LIST);
+    static CallMeasurement newInstance(int id, String name, long startNS) {
+        return new CallMeasurement(id, name, Collections.EMPTY_MAP, Collections.EMPTY_LIST, startNS, -1, Collections.EMPTY_LIST);
+    }
+
+    int getId() {
+        return id;
     }
 
     public String getName() {
@@ -53,12 +59,6 @@ public class CallMeasurement extends Measurement {
         return stopNS - startNS;
     }
 
-    public CallMeasurement withChild(CallMeasurement callMeasurement) {
-        List<CallMeasurement> newChildren = new ArrayList<CallMeasurement>(children);
-        newChildren.add(callMeasurement);
-        return new CallMeasurement(name, properties, newChildren, startNS, stopNS, tags);
-    }
-
     public boolean isEqualExceptTimings(CallMeasurement other) {
         int nodeCount = children.size();
         if (other.getName().equals(name) && other.getProperties().equals(properties) && other.getChildren().size() == nodeCount && other.getTags().equals(tags)) {
@@ -74,27 +74,41 @@ public class CallMeasurement extends Measurement {
 
     @Override
     public String toString() {
-        return "name=" + name + ", properties=" + properties + ", children=" + children;
+        return "name=" + name + ", properties=" + properties + ", children=" + children + ", tags=" + tags;
     }
 
-    public CallMeasurement withStopNS(long stopNS) {
-        return new CallMeasurement(name, properties, children, startNS, stopNS, tags);
+    CallMeasurement withChild(CallMeasurement callMeasurement) {
+        List<CallMeasurement> newChildren = new ArrayList<CallMeasurement>(children);
+        newChildren.add(callMeasurement);
+        return new CallMeasurement(id, name, properties, newChildren, startNS, stopNS, tags);
+    }
+
+    CallMeasurement withStopNS(long stopNS) {
+        return new CallMeasurement(id, name, properties, children, startNS, stopNS, tags);
     }
 
     public CallMeasurement withProperties(Map<String, String> properties) {
-        return new CallMeasurement(name, properties, children, startNS, stopNS, tags);
+        return new CallMeasurement(id, name, properties, children, startNS, stopNS, tags);
     }
 
     public CallMeasurement withProperty(String name, String value) {
         HashMap<String, String> newProperties = new HashMap<String, String>(properties);
         newProperties.put(name, value);
-        return new CallMeasurement(this.name, newProperties, children, startNS, stopNS, tags);
+        return new CallMeasurement(id, this.name, newProperties, children, startNS, stopNS, tags);
     }
 
     public CallMeasurement withTag(String tag) {
         ArrayList<String> newTags = new ArrayList<String>(tags);
         newTags.add(tag);
-        return new CallMeasurement(name, properties, children, startNS, stopNS, newTags);
+        return new CallMeasurement(id, name, properties, children, startNS, stopNS, newTags);
     }
-    
+
+    CallMeasurement withChildren(List<CallMeasurement> children) {
+        return new CallMeasurement(id, name, properties, children, startNS, stopNS, tags);
+    }
+
+    public void stop() {
+        CallGraphRecorder.commit(this);
+    }
+
 }

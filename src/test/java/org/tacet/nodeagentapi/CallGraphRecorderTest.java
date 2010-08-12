@@ -1,6 +1,5 @@
 package org.tacet.nodeagentapi;
 
-import com.google.common.collect.ImmutableMap;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -13,14 +12,14 @@ public class CallGraphRecorderTest {
 
     @Test
     public void call_graph_is_recorded() {
-        CallGraphRecorder.start("a", ImmutableMap.of("Hei", "Hopp"));
-        CallGraphRecorder.start("b");//TODO:.withTag("stupid");
-        CallGraphRecorder.stop("b");
-        CallGraphRecorder.start("c");
-        CallGraphRecorder.stop("c");
-        CallGraphRecorder.stop("a");
+        CallMeasurement a = CallGraphRecorder.start("a").withProperty("Hei", "Hopp");
+        CallMeasurement b = CallGraphRecorder.start("b").withTag("stupid");
+        b.stop();
+        CallMeasurement c = CallGraphRecorder.start("c");
+        c.stop();
+        a.stop();
         CallMeasurement lastCallGraph = CallGraphRecorder.getAndResetLastCallGraph();
-        CallMeasurement expectedCallGraph = CallMeasurement.newInstance("a", 0).withProperty("Hei", "Hopp").withChild(CallMeasurement.newInstance("b", 0)/*.withTag("Stupid")*/).withChild(CallMeasurement.newInstance("c", 0));
+        CallMeasurement expectedCallGraph = CallMeasurement.newInstance(1, "a", 0).withProperty("Hei", "Hopp").withChild(CallMeasurement.newInstance(2, "b", 0).withTag("stupid")).withChild(CallMeasurement.newInstance(1, "c", 0));
         assertCallGraphEquals(expectedCallGraph, lastCallGraph);
     }
 
@@ -30,29 +29,68 @@ public class CallGraphRecorderTest {
 
     @Test
     public void call_graph_is_recorded_in_per_thread_context() throws Exception {
-        CallGraphRecorder.start("a");
+        CallMeasurement a = CallGraphRecorder.start("a");
         Thread thread = new Thread(new Runnable() {
             public void run() {
-                CallGraphRecorder.start("b");
-                CallGraphRecorder.stop("b");
-                CallMeasurement expectedCallGraph = CallMeasurement.newInstance("b", 0);
+                CallMeasurement b = CallGraphRecorder.start("b");
+                b.stop();
+                CallMeasurement expectedCallGraph = CallMeasurement.newInstance(1, "b", 0);
                 CallMeasurement lastCallGraph = CallGraphRecorder.getAndResetLastCallGraph();
                 assertCallGraphEquals(expectedCallGraph, lastCallGraph);
             }
         });
         thread.start();
         thread.join(100000);
-        CallGraphRecorder.stop("a");
-        CallMeasurement expectedCallGraph = CallMeasurement.newInstance("a", 0);
+        a.stop();
+        CallMeasurement expectedCallGraph = CallMeasurement.newInstance(1, "a", 0);
         CallMeasurement lastCallGraph = CallGraphRecorder.getAndResetLastCallGraph();
         assertCallGraphEquals(expectedCallGraph, lastCallGraph);
     }
 
     @Test
     public void call_timings_is_available_recursively() throws Exception {
-        CallMeasurement callMeasurement = CallMeasurement.newInstance("a", 90000).withStopNS(90060).withChild(CallMeasurement.newInstance("b", 90020).withStopNS(90040));
+        CallMeasurement callMeasurement = CallMeasurement.newInstance(1, "a", 90000).withStopNS(90060).withChild(CallMeasurement.newInstance(2, "b", 90020).withStopNS(90040));
         assertEquals(60, callMeasurement.getValue().longValue());
         assertEquals(20, callMeasurement.getChildren().get(0).getValue().longValue());
+    }
+
+    @Test
+    public void unclosed_measurements_will_be_dropped() {
+        CallMeasurement a = CallGraphRecorder.start("a");
+        CallGraphRecorder.start("b");
+        a.stop();
+        assertCallGraphEquals(CallMeasurement.newInstance(1, "a", 0), CallGraphRecorder.getAndResetLastCallGraph());
+    }
+
+    @Test
+    public void unclosed_measurements_with_children_will_be_dropped_and_the_result_will_be_moved_to_the_parent() {
+        CallMeasurement a = CallGraphRecorder.start("a");
+        CallGraphRecorder.start("b");
+        CallMeasurement c = CallGraphRecorder.start("c");
+        c.stop();
+        a.stop();
+        assertCallGraphEquals(CallMeasurement.newInstance(1, "a", 0).withChild(CallMeasurement.newInstance(3, "c", 0)), CallGraphRecorder.getAndResetLastCallGraph());
+    }
+
+    @Test
+    public void closing_out_of_order_will_lead_to_dropping_of_the_last_item() {
+        CallMeasurement a = CallGraphRecorder.start("a");
+        CallMeasurement b = CallGraphRecorder.start("b");
+        CallMeasurement c = CallGraphRecorder.start("c");
+        b.stop();
+        c.stop();
+        a.stop();
+        assertCallGraphEquals(CallMeasurement.newInstance(1, "a", 0).withChild(CallMeasurement.newInstance(2, "b", 0)), CallGraphRecorder.getAndResetLastCallGraph());
+    }
+
+    @Test
+    public void closing_multiple_times_will_lead_to_log_warnings() {
+        CallMeasurement a = CallGraphRecorder.start("a");
+        CallMeasurement b = CallGraphRecorder.start("b");
+        b.stop();
+        b.stop();
+        a.stop();
+        assertCallGraphEquals(CallMeasurement.newInstance(1, "a", 0).withChild(CallMeasurement.newInstance(2, "b", 0)), CallGraphRecorder.getAndResetLastCallGraph());
     }
 
 }

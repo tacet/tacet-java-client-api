@@ -51,7 +51,7 @@ public class Root {
      * @param date overwrite date
      * @return new root
      */
-    public Root withDate(Date date) {
+    Root withDate(Date date) {
         return new Root(source, date, measurements);
     }
 

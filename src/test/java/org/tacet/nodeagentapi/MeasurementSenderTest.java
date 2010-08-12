@@ -60,8 +60,8 @@ public class MeasurementSenderTest {
 
     @Test
     public void can_send_result_asynchronous_as_json() throws Exception {
-        CallMeasurement subCallMeasurement = CallMeasurement.newInstance("yeah", 90020).withStopNS(90040);
-        CallMeasurement callMeasurement = CallMeasurement.newInstance("hei", 90000).withProperties(ImmutableMap.of("user", "name")).withStopNS(90060);
+        CallMeasurement subCallMeasurement = CallMeasurement.newInstance(2, "yeah", 90020).withStopNS(90040);
+        CallMeasurement callMeasurement = CallMeasurement.newInstance(1, "hei", 90000).withProperties(ImmutableMap.of("user", "name")).withStopNS(90060);
         new MeasurementSender("http://localhost:" + getPort() + "/measurements").send(Root.newInstance("here").withMeasurement(callMeasurement).withDate(new Date(0)));
         new MeasurementSender("http://localhost:" + getPort() + "/measurements").send(Root.newInstance("there").withMeasurement(callMeasurement.withChild(subCallMeasurement)).withDate(new Date(0)));
         assertResults(jsonFileAsMap("can_send_result_asynchronous_as_json_example1.json"),
@@ -80,7 +80,7 @@ public class MeasurementSenderTest {
 
     @Test
     public void error_in_sending_does_not_bubble_up() {
-        new MeasurementSender("http://localhost:0/").send(Root.newInstance("everywhere").withMeasurement(CallMeasurement.newInstance("yeah", 90020).withStopNS(90040)));
+        new MeasurementSender("http://localhost:0/").send(Root.newInstance("everywhere").withMeasurement(CallMeasurement.newInstance(1, "yeah", 90020).withStopNS(90040)));
     }
 
     private void assertResults(Map<String, ?>... expectedResults) {
