@@ -5,7 +5,7 @@ import java.util.*;
 /**
  * @author <a href="mailto:thor.aage.eldby@arktekk.no">Thor Åge Eldby (teldby)</a>
  */
-public class CallMeasurement extends Measurement {
+public class CallMeasurement implements Measurement<Long> {
 
     private final int id;
     private final String name;

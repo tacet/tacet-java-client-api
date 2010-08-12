@@ -11,7 +11,7 @@ import org.mortbay.jetty.Server;
 import org.mortbay.jetty.nio.SelectChannelConnector;
 import org.mortbay.jetty.servlet.ServletHandler;
 import org.mortbay.jetty.servlet.ServletHolder;
-import org.tacet.nodeagentapi.spring.HttpJsonMeasurementSender;
+import org.tacet.nodeagentapi.service.HttpJsonMeasurementSender;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -19,6 +19,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static org.junit.Assert.fail;
 
@@ -30,6 +32,7 @@ public class MeasurementSenderTest {
     private static Server server = new Server();
     private static Map<String, ?> result;
     private final static Object resultLock = new Object();
+    private ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     @BeforeClass
     static public void setupServer() throws Exception {
@@ -63,8 +66,8 @@ public class MeasurementSenderTest {
     public void can_send_result_asynchronous_as_json() throws Exception {
         CallMeasurement subCallMeasurement = CallMeasurement.newInstance(2, "yeah", 90020).withStopNS(90040);
         CallMeasurement callMeasurement = CallMeasurement.newInstance(1, "hei", 90000).withProperties(ImmutableMap.of("user", "name")).withStopNS(90060);
-        new HttpJsonMeasurementSender("http://localhost:" + getPort() + "/measurements").send(Root.newInstance("here").withMeasurement(callMeasurement).withDate(new Date(0)));
-        new HttpJsonMeasurementSender("http://localhost:" + getPort() + "/measurements").send(Root.newInstance("there").withMeasurement(callMeasurement.withChild(subCallMeasurement)).withDate(new Date(0)));
+        new HttpJsonMeasurementSender(executorService, "http://localhost:" + getPort() + "/measurements").send(Root.newInstance("here").withMeasurement(callMeasurement).withDate(new Date(0)));
+        new HttpJsonMeasurementSender(executorService, "http://localhost:" + getPort() + "/measurements").send(Root.newInstance("there").withMeasurement(callMeasurement.withChild(subCallMeasurement)).withDate(new Date(0)));
         assertResults(jsonFileAsMap("can_send_result_asynchronous_as_json_example1.json"),
                 jsonFileAsMap("can_send_result_asynchronous_as_json_example2.json"));
     }
@@ -81,7 +84,7 @@ public class MeasurementSenderTest {
 
     @Test
     public void error_in_sending_does_not_bubble_up() {
-        new HttpJsonMeasurementSender("http://localhost:0/").send(Root.newInstance("everywhere").withMeasurement(CallMeasurement.newInstance(1, "yeah", 90020).withStopNS(90040)));
+        new HttpJsonMeasurementSender(executorService, "http://localhost:0/").send(Root.newInstance("everywhere").withMeasurement(CallMeasurement.newInstance(1, "yeah", 90020).withStopNS(90040)));
     }
 
     private void assertResults(Map<String, ?>... expectedResults) {

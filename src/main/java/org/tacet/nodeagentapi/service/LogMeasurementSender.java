@@ -1,4 +1,4 @@
-package org.tacet.nodeagentapi.spring;
+package org.tacet.nodeagentapi.service;
 
 import org.apache.log4j.Logger;
 import org.tacet.nodeagentapi.Root;

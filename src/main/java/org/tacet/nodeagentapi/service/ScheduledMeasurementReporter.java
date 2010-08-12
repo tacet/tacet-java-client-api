@@ -1,4 +1,4 @@
-package org.tacet.nodeagentapi.spring;
+package org.tacet.nodeagentapi.service;
 
 import org.tacet.nodeagentapi.Measurement;
 import org.tacet.nodeagentapi.Meter;

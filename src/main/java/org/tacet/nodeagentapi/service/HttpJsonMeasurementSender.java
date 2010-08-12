@@ -1,4 +1,4 @@
-package org.tacet.nodeagentapi.spring;
+package org.tacet.nodeagentapi.service;
 
 import com.sun.jersey.api.client.UniformInterfaceException;
 import com.sun.jersey.api.client.WebResource;
@@ -8,25 +8,24 @@ import com.sun.jersey.client.apache.ApacheHttpClient;
 import com.sun.jersey.client.apache.config.ApacheHttpClientConfig;
 import org.apache.log4j.Logger;
 import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
-import org.springframework.beans.factory.DisposableBean;
 import org.tacet.nodeagentapi.Root;
 
 import javax.ws.rs.core.MediaType;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * @author <a href="mailto:thor.aage.eldby@arktekk.no">Thor Åge Eldby (teldby)</a>
  */
-public class HttpJsonMeasurementSender implements MeasurementSender, DisposableBean {
+public class HttpJsonMeasurementSender implements MeasurementSender {
 
     private final static Logger logger = Logger.getLogger(HttpJsonMeasurementSender.class);
 
     private final ApacheHttpClient httpClient;
     private final String uri;
-    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private final ExecutorService executorService;
 
-    public HttpJsonMeasurementSender(String uri) {
+    public HttpJsonMeasurementSender(ExecutorService executorService, String uri) {
+        this.executorService = executorService;
         this.uri = uri;
         ClientConfig config = new DefaultClientConfig();
         config.getClasses().add(JacksonJsonProvider.class);
@@ -53,11 +52,6 @@ public class HttpJsonMeasurementSender implements MeasurementSender, DisposableB
                 }
             }
         });
-    }
-
-    @Override
-    public void destroy() throws Exception {
-        executorService.shutdown();
     }
 
 }
