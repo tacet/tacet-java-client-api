@@ -3,10 +3,12 @@ package org.tacet.nodeagentapi;
 /**
  * @author <a href="mailto:thor.aage.eldby@arktekk.no">Thor Åge Eldby (teldby)</a>
  */
-abstract public class Measurement {
+public interface Measurement<T> {
 
-    abstract public String getKind();
+    String getKind();
 
-    abstract public Object getValue();
+    String getName();
+
+    T getValue();
 
 }

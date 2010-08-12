@@ -45,6 +45,11 @@ public class Root {
         return new Root(source, date, newMeasurements);
     }
 
+    @Override
+    public String toString() {
+        return "Root(source=" + source + ", date=" + date + ", measurements=" + measurements +")";
+    }
+
     /**
      * Really just for testing
      *

@@ -74,7 +74,7 @@ public class CallMeasurement extends Measurement {
 
     @Override
     public String toString() {
-        return "name=" + name + ", properties=" + properties + ", children=" + children + ", tags=" + tags;
+        return "CallMeasurement(name=" + name + ", properties=" + properties + ", tags=" + tags + ", children=" + children + ")";
     }
 
     CallMeasurement withChild(CallMeasurement callMeasurement) {
