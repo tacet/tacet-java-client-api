@@ -40,7 +40,7 @@ public class CallGraphFilter implements Filter {
             if (head == null) {
                 logger.fatal("Measurement graph empty. Quite impossible.");
             } else {
-                measurementSender.send(Root.newInstance(NetworkHelper.getHostName()).withMeasurement(head));
+                measurementSender.send(Root.newInstance(NetworkHelper.getHostIp()).withMeasurement(head));
             }
         }
     }

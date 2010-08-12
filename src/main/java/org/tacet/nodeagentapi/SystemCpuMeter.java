@@ -7,11 +7,11 @@ import java.lang.management.OperatingSystemMXBean;
  * @author <a href="mailto:thor.aage.eldby@arktekk.no">Thor Åge Eldby (teldby)</a>
  */
 @SuppressWarnings({"UnusedDeclaration"})
-public class SystemCPUMeter implements Meter {
+public class SystemCpuMeter implements Meter {
     
     private final OperatingSystemMXBean mxbean;
 
-    public SystemCPUMeter() {
+    public SystemCpuMeter() {
         mxbean = ManagementFactory.getOperatingSystemMXBean();
     }
 

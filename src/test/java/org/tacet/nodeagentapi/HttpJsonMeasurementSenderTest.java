@@ -27,7 +27,7 @@ import static org.junit.Assert.fail;
 /**
  * @author <a href="mailto:thor.aage.eldby@arktekk.no">Thor Åge Eldby (teldby)</a>
  */
-public class MeasurementSenderTest {
+public class HttpJsonMeasurementSenderTest {
 
     private static Server server = new Server();
     private static Map<String, ?> result;
@@ -66,15 +66,15 @@ public class MeasurementSenderTest {
     public void can_send_result_asynchronous_as_json() throws Exception {
         CallMeasurement subCallMeasurement = CallMeasurement.newInstance(2, "yeah", 90020).withStopNS(90040);
         CallMeasurement callMeasurement = CallMeasurement.newInstance(1, "hei", 90000).withProperties(ImmutableMap.of("user", "name")).withStopNS(90060);
-        new HttpJsonMeasurementSender(executorService, "http://localhost:" + getPort() + "/measurements").send(Root.newInstance("here").withMeasurement(callMeasurement).withDate(new Date(0)));
-        new HttpJsonMeasurementSender(executorService, "http://localhost:" + getPort() + "/measurements").send(Root.newInstance("there").withMeasurement(callMeasurement.withChild(subCallMeasurement)).withDate(new Date(0)));
+        new HttpJsonMeasurementSender(executorService, getMeasurementsUrl()).send(Root.newInstance("here").withMeasurement(callMeasurement).withDate(new Date(0)));
+        new HttpJsonMeasurementSender(executorService, getMeasurementsUrl()).send(Root.newInstance("there").withMeasurement(callMeasurement.withChild(subCallMeasurement)).withDate(new Date(0)));
         assertResults(jsonFileAsMap("can_send_result_asynchronous_as_json_example1.json"),
                 jsonFileAsMap("can_send_result_asynchronous_as_json_example2.json"));
     }
 
     @SuppressWarnings({"unchecked"})
     private static Map<String, ?> jsonFileAsMap(String resourceName) throws IOException {
-        return new JsonFactory(new ObjectMapper()).createJsonParser(MeasurementSenderTest.class.getResourceAsStream(resourceName)).readValueAs(Map.class);
+        return new JsonFactory(new ObjectMapper()).createJsonParser(HttpJsonMeasurementSenderTest.class.getResourceAsStream(resourceName)).readValueAs(Map.class);
     }
 
     @SuppressWarnings({"unchecked"})
@@ -85,6 +85,12 @@ public class MeasurementSenderTest {
     @Test
     public void error_in_sending_does_not_bubble_up() {
         new HttpJsonMeasurementSender(executorService, "http://localhost:0/").send(Root.newInstance("everywhere").withMeasurement(CallMeasurement.newInstance(1, "yeah", 90020).withStopNS(90040)));
+    }
+
+    @Test
+    public void can_send_value_measurement() throws Exception {
+        new HttpJsonMeasurementSender(executorService, getMeasurementsUrl()).send(Root.newInstance("here").withMeasurement(ValueMeasurement.newInstance("tull", "ball", 3.14)).withDate(new Date(0)));
+        assertResults(jsonFileAsMap("can_send_value_measurement_example.json"));
     }
 
     private void assertResults(Map<String, ?>... expectedResults) {
@@ -102,8 +108,8 @@ public class MeasurementSenderTest {
         }
     }
 
-    private int getPort() {
-        return server.getConnectors()[0].getLocalPort();
+    private String getMeasurementsUrl() {
+        return "http://localhost:" + server.getConnectors()[0].getLocalPort() + "/measurements";
     }
 
 }

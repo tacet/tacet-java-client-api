@@ -15,7 +15,7 @@ public class ValueMeasurement<T> implements Measurement<T> {
         this.value = value;
     }
 
-    static <T> Measurement newInstance(String kind, String name, double value) {
+    static <T> Measurement newInstance(String kind, String name, T value) {
         return new ValueMeasurement(kind, name, value);
     }
 

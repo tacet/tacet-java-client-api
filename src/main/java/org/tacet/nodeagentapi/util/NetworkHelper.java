@@ -13,7 +13,10 @@ import java.util.List;
  */
 public class NetworkHelper {
 
-    public static String getHostName() {
+    /**
+     * @return reports the alphabetical first non-loopback and non-virtual interface that is up
+     */
+    public static String getHostIp() {
         List<String> addresses = new ArrayList<String>();
         try {
             for (NetworkInterface networkInterface : EnumerationWrapper.from(NetworkInterface.getNetworkInterfaces())) {

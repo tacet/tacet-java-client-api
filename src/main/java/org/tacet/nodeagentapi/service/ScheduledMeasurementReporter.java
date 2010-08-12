@@ -19,7 +19,7 @@ public class ScheduledMeasurementReporter {
     }
 
     public void report() {
-        Root root = Root.newInstance(NetworkHelper.getHostName());
+        Root root = Root.newInstance(NetworkHelper.getHostIp());
         for (Meter meter : meters) {
             Measurement measurement = meter.measure();
             if (measurement != null) {
