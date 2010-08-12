@@ -20,10 +20,10 @@ public class JvmCpuMeter implements Meter {
     }
 
     @Override
-    public Measurement measure() {
+    public ValueMeasurement<Double> measure() {
         long nanos = System.nanoTime();
         long cpuTimeNanos = mxBean.getProcessCpuTime();
-        Measurement measurement;
+        ValueMeasurement<Double> measurement;
         if (initial || nanos == lastNanos) {
             measurement = null;
             initial = false;

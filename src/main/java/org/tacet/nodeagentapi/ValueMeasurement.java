@@ -15,8 +15,8 @@ public class ValueMeasurement<T> implements Measurement<T> {
         this.value = value;
     }
 
-    static <T> Measurement newInstance(String kind, String name, T value) {
-        return new ValueMeasurement(kind, name, value);
+    static <T> ValueMeasurement<T> newInstance(String kind, String name, T value) {
+        return new ValueMeasurement<T>(kind, name, value);
     }
 
     @Override
@@ -33,4 +33,10 @@ public class ValueMeasurement<T> implements Measurement<T> {
     public T getValue() {
         return value;
     }
+
+    @Override
+    public String toString() {
+        return "ValueMeasurement(kind=" + kind + ", name=" + name + ", value=" + value + ")";
+    }
+
 }
