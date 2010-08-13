@@ -9,11 +9,11 @@ import org.tacet.nodeagentapi.util.NetworkHelper;
  * @author <a href="mailto:thor.aage.eldby@arktekk.no">Thor Åge Eldby (teldby)</a>
  */
 @SuppressWarnings({"UnusedDeclaration"})
-public class ScheduledMeasurementReporter {
+public class SchedulableMeasurementReporter {
     private final MeasurementSender measurementSender;
     private final Meter[] meters;
 
-    public ScheduledMeasurementReporter(MeasurementSender measurementSender, Meter... meters) {
+    public SchedulableMeasurementReporter(MeasurementSender measurementSender, Meter... meters) {
         this.measurementSender = measurementSender;
         this.meters = meters;
     }
