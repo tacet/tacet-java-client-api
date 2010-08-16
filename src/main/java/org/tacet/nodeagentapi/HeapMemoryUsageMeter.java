@@ -14,7 +14,7 @@ public class HeapMemoryUsageMeter implements Meter<Double> {
     @Override
     public ValueMeasurement<Double> measure() {
         MemoryUsage heapMemoryUsage = mxBean.getHeapMemoryUsage();
-        return ValueMeasurement.newInstance("usage", "heap-memory", (double) heapMemoryUsage.getUsed() / (double) heapMemoryUsage.getMax());
+        return ValueMeasurement.newInstance("memory-usage", "heap", (double) heapMemoryUsage.getUsed() / (double) heapMemoryUsage.getMax());
     }
 
 }

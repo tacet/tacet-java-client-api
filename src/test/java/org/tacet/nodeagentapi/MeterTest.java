@@ -39,7 +39,6 @@ public class MeterTest {
     public void memory_usage_is_between_0_and_1() {
         HeapMemoryUsageMeter meter = new HeapMemoryUsageMeter();
         Double value = meter.measure().getValue();
-        System.out.println("%: " + value);
         assertTrue(value > .0);
         assertTrue(value <= 1.0);
     }
