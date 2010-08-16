@@ -9,11 +9,7 @@ import java.lang.management.OperatingSystemMXBean;
 @SuppressWarnings({"UnusedDeclaration"})
 public class SystemCpuMeter implements Meter<Double> {
     
-    private final OperatingSystemMXBean mxbean;
-
-    public SystemCpuMeter() {
-        mxbean = ManagementFactory.getOperatingSystemMXBean();
-    }
+    private final OperatingSystemMXBean mxbean = ManagementFactory.getOperatingSystemMXBean();
 
     @Override
     public ValueMeasurement<Double> measure() {
