@@ -47,6 +47,8 @@ public class HttpJsonMeasurementSender implements MeasurementSender {
             public void run() {
                 try {
                     createResource(uri).put(root);
+                } catch (UniformInterfaceException e) {
+                    logger.error("Failed to push call graph. Response: " + e.getResponse().getEntity(String.class), e);
                 } catch (Exception e) {
                     logger.error("Failed to push call graph", e);
                 }

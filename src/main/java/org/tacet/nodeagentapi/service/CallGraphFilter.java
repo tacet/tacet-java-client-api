@@ -7,6 +7,7 @@ import org.tacet.nodeagentapi.Root;
 import org.tacet.nodeagentapi.util.NetworkHelper;
 
 import javax.servlet.*;
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 
 /**
@@ -31,7 +32,7 @@ public class CallGraphFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        CallMeasurement measurement = CallGraphRecorder.start(request.getScheme());
+        CallMeasurement measurement = CallGraphRecorder.start(getName(request));
         try {
             chain.doFilter(request, response);
         } finally {
@@ -42,6 +43,14 @@ public class CallGraphFilter implements Filter {
             } else {
                 measurementSender.send(Root.newInstance(NetworkHelper.getHostIp()).withMeasurement(head));
             }
+        }
+    }
+
+    private String getName(ServletRequest request) {
+        if (request instanceof HttpServletRequest) {
+            return ((HttpServletRequest) request).getRequestURI();
+        } else {
+            return request.getScheme();
         }
     }
 

@@ -74,7 +74,7 @@ public class CallMeasurement implements Measurement<Long> {
 
     @Override
     public String toString() {
-        return "CallMeasurement(name=" + name + ", properties=" + properties + ", tags=" + tags + ", children=" + children + ")";
+        return "CallMeasurement(name=" + name + ", value=" + getValue() + ", properties=" + properties + ", tags=" + tags + ", children=" + children + ")";
     }
 
     CallMeasurement withChild(CallMeasurement callMeasurement) {

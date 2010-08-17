@@ -37,6 +37,7 @@ public class CallGraphRecorder {
     }
 
     static void commit(CallMeasurement measurement) {
+        measurement = measurement.withStopNS(System.nanoTime());
         try {
             ThreadInfo threadInfo = getThreadInfo();
             if (threadInfo.idStack.isEmpty()) {
