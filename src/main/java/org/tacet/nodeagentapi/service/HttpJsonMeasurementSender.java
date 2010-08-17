@@ -46,7 +46,7 @@ public class HttpJsonMeasurementSender implements MeasurementSender {
             @Override
             public void run() {
                 try {
-                    createResource(uri).put(String.class, root);
+                    createResource(uri).put(root);
                 } catch (Exception e) {
                     logger.error("Failed to push call graph", e);
                 }
