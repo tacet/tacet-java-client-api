@@ -17,6 +17,14 @@ public class CallGraphRecorder {
 
     private static ThreadLocal<ThreadInfo> threadLocalThreadInfo = new ThreadLocal<ThreadInfo>();
 
+    public static void startRecorder() {
+       if (threadLocalThreadInfo.get() != null) {
+           logger.warn("Call recording started at multiple points (should only be started on entry point");
+       } else {
+           threadLocalThreadInfo.set(new ThreadInfo());
+       }
+    }
+
     private static class ThreadInfo {
         public Stack<Pair<Integer, String>> idStack = new Stack<Pair<Integer, String>>();
         public Stack<CallMeasurement> children = new Stack<CallMeasurement>();
@@ -28,7 +36,12 @@ public class CallGraphRecorder {
 
     public static CallMeasurement start(String name) {
         try {
-            return CallMeasurement.newInstance(getThreadInfo().pushNewId(name).first, name, System.nanoTime());
+            ThreadInfo threadInfo = threadLocalThreadInfo.get();
+            int id = -1;
+            if (threadInfo != null) {
+                id = threadInfo.pushNewId(name).first;
+            }
+            return CallMeasurement.newInstance(id, name, System.nanoTime());
         } catch (Exception e) {
             // We do this to avoid leaking exceptions into application 
             logger.fatal("Call graph recorder failed when adding '" + name + "'", e);
@@ -39,7 +52,10 @@ public class CallGraphRecorder {
     static void commit(CallMeasurement measurement) {
         measurement = measurement.withStopNS(System.nanoTime());
         try {
-            ThreadInfo threadInfo = getThreadInfo();
+            ThreadInfo threadInfo = threadLocalThreadInfo.get();
+            if (threadInfo == null) {
+                return;
+            }
             if (threadInfo.idStack.isEmpty()) {
                 logger.fatal("Received commit after empty id stack.");
             } else {
@@ -71,7 +87,12 @@ public class CallGraphRecorder {
     }
 
     public static CallMeasurement getAndResetLastCallGraph() {
-        Stack<CallMeasurement> measurements = getThreadInfo().children;
+        ThreadInfo threadInfo = threadLocalThreadInfo.get();
+        if (threadInfo == null) {
+            logger.fatal("Recording not started");
+            return null;
+        }
+        Stack<CallMeasurement> measurements = threadInfo.children;
         CallMeasurement measurement;
         if (measurements.isEmpty()) {
             logger.warn("No call measurements found.");
@@ -83,16 +104,8 @@ public class CallGraphRecorder {
                 return getAndResetLastCallGraph();
             }
         }
-        threadLocalThreadInfo.set(null);
+        threadLocalThreadInfo.remove();
         return measurement;
     }
 
-    private static ThreadInfo getThreadInfo() {
-        ThreadInfo threadInfo = threadLocalThreadInfo.get();
-        if (threadInfo == null) {
-            threadInfo = new ThreadInfo();
-            threadLocalThreadInfo.set(threadInfo);
-        }
-        return threadInfo;
-    }
 }

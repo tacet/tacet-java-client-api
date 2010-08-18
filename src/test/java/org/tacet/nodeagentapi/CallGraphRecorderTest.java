@@ -2,6 +2,7 @@ package org.tacet.nodeagentapi;
 
 import org.junit.Test;
 
+import static junit.framework.Assert.assertNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -12,6 +13,7 @@ public class CallGraphRecorderTest {
 
     @Test
     public void call_graph_is_recorded() {
+        CallGraphRecorder.startRecorder();
         CallMeasurement a = CallGraphRecorder.start("a").withProperty("Hei", "Hopp");
         CallMeasurement b = CallGraphRecorder.start("b").withTag("stupid");
         b.stop();
@@ -29,6 +31,7 @@ public class CallGraphRecorderTest {
 
     @Test
     public void call_graph_is_recorded_in_per_thread_context() throws Exception {
+        CallGraphRecorder.startRecorder();
         CallMeasurement a = CallGraphRecorder.start("a");
         Thread thread = new Thread(new Runnable() {
             public void run() {
@@ -49,6 +52,7 @@ public class CallGraphRecorderTest {
 
     @Test
     public void call_timings_is_available_recursively() throws Exception {
+        CallGraphRecorder.startRecorder();
         CallMeasurement callMeasurement = CallMeasurement.newInstance(1, "a", 90000).withStopNS(90060).withChild(CallMeasurement.newInstance(2, "b", 90020).withStopNS(90040));
         assertEquals(60, callMeasurement.getValue().longValue());
         assertEquals(20, callMeasurement.getChildren().get(0).getValue().longValue());
@@ -56,6 +60,7 @@ public class CallGraphRecorderTest {
 
     @Test
     public void unclosed_measurements_will_be_dropped() {
+        CallGraphRecorder.startRecorder();
         CallMeasurement a = CallGraphRecorder.start("a");
         CallGraphRecorder.start("b");
         a.stop();
@@ -64,6 +69,7 @@ public class CallGraphRecorderTest {
 
     @Test
     public void unclosed_measurements_with_children_will_be_dropped_and_the_result_will_be_moved_to_the_parent() {
+        CallGraphRecorder.startRecorder();
         CallMeasurement a = CallGraphRecorder.start("a");
         CallGraphRecorder.start("b");
         CallMeasurement c = CallGraphRecorder.start("c");
@@ -74,6 +80,7 @@ public class CallGraphRecorderTest {
 
     @Test
     public void closing_out_of_order_will_lead_to_dropping_of_the_last_item() {
+        CallGraphRecorder.startRecorder();
         CallMeasurement a = CallGraphRecorder.start("a");
         CallMeasurement b = CallGraphRecorder.start("b");
         CallMeasurement c = CallGraphRecorder.start("c");
@@ -85,12 +92,20 @@ public class CallGraphRecorderTest {
 
     @Test
     public void closing_multiple_times_will_lead_to_log_warnings() {
+        CallGraphRecorder.startRecorder();
         CallMeasurement a = CallGraphRecorder.start("a");
         CallMeasurement b = CallGraphRecorder.start("b");
         b.stop();
         b.stop();
         a.stop();
         assertCallGraphEquals(CallMeasurement.newInstance(1, "a", 0).withChild(CallMeasurement.newInstance(2, "b", 0)), CallGraphRecorder.getAndResetLastCallGraph());
+    }
+
+    @Test
+    public void recording_calls_without_starting_recorder_should_work_but_not_lead_to_any_result() {
+        CallMeasurement a = CallGraphRecorder.start("a").withProperty("hei", "hopp");
+        a.stop();
+        assertNull(CallGraphRecorder.getAndResetLastCallGraph());
     }
 
 }

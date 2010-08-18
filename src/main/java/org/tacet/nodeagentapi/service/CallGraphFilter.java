@@ -39,6 +39,7 @@ public class CallGraphFilter implements Filter {
         if (pathFilter == null) {
             chain.doFilter(request, response);
         } else {
+            CallGraphRecorder.startRecorder();
             CallMeasurement measurement = CallGraphRecorder.start(pathFilter.getMeasurementName());
             if (request instanceof HttpServletRequest) {
                 measurement = measurement.withProperty("path", ((HttpServletRequest) request).getRequestURI());
